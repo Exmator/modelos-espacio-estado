@@ -1,4 +1,4 @@
-source("algoritmo_simulacion.R")
+source("McCausland/algoritmo_simulacion.R")
 
 set.seed(123)
 
