@@ -1,0 +1,31 @@
+# --- RStudio / R ---
+.Rproj.user/
+.Rhistory
+.Rdata
+.RData
+.Ruserdata
+.httr-oauth
+.RDataTmp
+
+# Archivos de sesión/caché de R
+*.Rout
+.Rapp.history
+
+# renv (si en algún momento se usa para manejar dependencias)
+renv/library/
+renv/local/
+renv/staging/
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editores ---
+.vscode/
+.idea/
+*.swp
+
+# --- Archivos temporales ---
+*~
+*.tmp
