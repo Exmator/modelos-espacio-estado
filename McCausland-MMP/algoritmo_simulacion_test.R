@@ -1,4 +1,4 @@
-source("McCausland/algoritmo_simulacion.R")
+source("McCausland-MMP/algoritmo_simulacion.R")
 
 set.seed(123)
 

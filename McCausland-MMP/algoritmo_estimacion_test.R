@@ -10,8 +10,8 @@
 # Caso simple: m=2, p=2 para reducir tiempo de cómputo.
 # ============================================================
 
-source("McCausland/algoritmo_simulacion.R")
-source("McCausland/algoritmo_estimacion.R")
+source("McCausland-MMP/algoritmo_simulacion.R")
+source("McCausland-MMP/algoritmo_estimacion.R")
 
 set.seed(120)
 

@@ -8,12 +8,21 @@ This is a thesis project ("Trabajo de grado") in R comparing three different sta
 formulations, evaluating them both statistically and computationally to determine which is most
 efficient computationally and which best defines/recovers the latent states. The codebase currently
 implements a Dynamic Factor Model (DFM) and the McCausland et al. (2011) precision-based simulation
-smoother (MMP — "Mean and Marginal Precision" style algorithm), based on:
+smoother (MMP — "Mean and Marginal Precision" style algorithm), in the `McCausland-MMP/` directory,
+based on:
 
-- `mccausland2011.pdf` — McCausland, Miller, Pelletier (2011), "Simulation smoothing for
-  state-space models", the primary algorithmic reference (see p. 205 for the computational
+- `McCausland-MMP/mccausland2011.pdf` — McCausland, Miller, Pelletier (2011), "Simulation smoothing
+  for state-space models", the primary algorithmic reference (see p. 205 for the computational
   experiment parameters mirrored in the test files).
 - `Mixed effects state-space models with Student-t errors.pdf` — secondary reference.
+- `McCausland-MMP/formulas_modelo_factorial_McCausland_2011.md` — worked derivation of the
+  formulas below (Ω blocks, `c` vector) from the article's general model down to this project's
+  dynamic factor model; consult it before changing `compute_Omega_c()`.
+- `librerias_testing_simulacion.md` — survey of candidate R packages for unit testing
+  (`testthat`), cross-validating the smoother against external references (`KFAS`, `FKF`, `dlm`,
+  `MARSS`), and running the Monte Carlo comparison study (`SimDesign`, `bench`); notes strategies
+  for testing the stochastic parts (`modelo_de_simulacion()`, `mmp_draw()`) without flakiness.
+  Nothing in it is implemented yet — it's a reference for future testing work.
 
 ## Environment
 
@@ -23,11 +32,11 @@ is present — dependencies are loaded ad hoc with `library()` inside individual
 ## Running the code
 
 There is no test runner or build system; scripts are plain R files meant to be sourced/run directly,
-either from the RStudio console or via Rscript:
+either from the RStudio console or via Rscript, from the repo root:
 
 ```
-Rscript algoritmo_simulacion_test.R
-Rscript algoritmo_estimacion_test.R
+Rscript McCausland-MMP/algoritmo_simulacion_test.R
+Rscript McCausland-MMP/algoritmo_estimacion_test.R
 ```
 
 Each `*_test.R` file sources its corresponding implementation file (`source("algoritmo_*.R")`),
@@ -46,7 +55,7 @@ The core model is a linear Gaussian state-space / dynamic factor model:
 with dimensions `m` (number of latent factors/states), `p` (number of observed series), and `n`
 (number of time periods).
 
-### Two-file pipeline
+### Two-file pipeline (`McCausland-MMP/`)
 
 - **`algoritmo_simulacion.R`** — `modelo_de_simulacion(Q, Q1, T_mat, D, a, Z, m, p, n)` simulates
   synthetic states `alpha` and observations `Y` from the model above (via Cholesky factors of
@@ -58,7 +67,7 @@ with dimensions `m` (number of latent factors/states), `p` (number of observed s
   three stages, each a separate function so they can be reused/benchmarked independently:
   1. `compute_Omega_c()` — builds the block-tridiagonal precision matrix `Omega` (as a list of
      diagonal blocks `Omega_diag` plus one constant off-diagonal block `Omega_off`, since it is
-     invariant across `t`) and the co-vector list `c_list`, from `Z`, `T_mat`, `Q`, `Q1`, `D`.
+     invariant across `t`) and the co-vector list `c_list`, from `Z`, `T_mat`, `Q`, `Q1`, `D`, `a`.
   2. `mmp_precompute()` — forward pass computing Cholesky factors `U_list` (upper-triangular
      `Lambda_t^T`) of the sequential precision matrices, `LiO_list` (`Lambda_t^{-1} * Omega_{t,t+1}`),
      and conditional means `m_list`; then a backward pass producing the smoothed means
@@ -68,9 +77,9 @@ with dimensions `m` (number of latent factors/states), `p` (number of observed s
   3. `mmp_draw()` — given the precomputed factors, draws one sample of `alpha | y` via a backward
      recursion using `rnorm()` innovations.
 
-  `estimar_estados_mmp(Y, Z, T_mat, Q, Q1, D, m, n, Ns)` is the entry point tying the three stages
-  together and returning both the smoothed mean (`mu_mat`) and `Ns` posterior draws (`draws`,
-  an `m x n x Ns` array).
+  `estimar_estados_mmp(Y, Z, T_mat, Q, Q1, D, a, m, n, Ns = 1)` is the entry point tying the three
+  stages together and returning both the smoothed mean (`mu_mat`) and `Ns` posterior draws
+  (`draws`, an `m x n x Ns` array).
 
 ### `referencias/`
 
@@ -82,11 +91,9 @@ Earlier/alternate implementations kept for reference, not part of the active pip
 - `Graphcyd.R` — plotting helpers (`graphvar`, `graphD`, `graphpop`, `graphind`) for visualizing
   MCMC/parameter trace output against true values.
 
-### `versionamiento/`
-
-Snapshots of earlier versions of the estimation/simulation algorithms (`*_v0.R`), kept for
-version history since this project is not (yet) under git. Do not treat these as current —
-compare against the root-level files before reusing anything from here.
+The project is now under git, so earlier `*_v0.R` snapshots (previously kept in a
+`versionamiento/` directory) have been removed — use `git log` / `git show` for version history
+instead of on-disk copies.
 
 ## Conventions
 
